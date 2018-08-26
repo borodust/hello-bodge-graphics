@@ -7,4 +7,6 @@
   :depends-on (cl-bodge/graphics bodge-appkit)
   :pathname "src"
   :serial t
-  :components ((:file "hello-bodge-graphics")))
+  :components ((:file "packages")
+               (:module pass-through
+                :components ((:file "app")))))

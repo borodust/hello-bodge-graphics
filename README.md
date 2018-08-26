@@ -18,7 +18,7 @@ Step-by-step introduction into `cl-bodge` graphics system.
 ;; Load the example itself:
 (ql:quickload :hello-bodge-graphics)
 ;; And run it!
-(hello-bodge-graphics:run)
+(hello-bodge-graphics:run/pass-through-graphics)
 ```
 
 # Documentation, guide and sources
