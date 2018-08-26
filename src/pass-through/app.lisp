@@ -1,4 +1,7 @@
-(cl:in-package :hello-bodge-graphics)
+(cl:defpackage :hello-bodge-graphics/pass-through
+  (:use :cl :cl-bodge.engine :cl-bodge.graphics :hello-bodge-graphics))
+
+(cl:in-package :hello-bodge-graphics/pass-through)
 
 (defshader (pass-through-vertex-shader
             ;; In :sources option we provide path to our shader.
@@ -11,7 +14,7 @@
             ;; Same as with vertex shader, here we let bodge know where to find the source
             (:sources (merge-project-path "src/pass-through/frag.glsl"))))
 
-(cl:in-package :hello-bodge-graphics)
+(cl:in-package :hello-bodge-graphics/pass-through)
 
 ;; This definition will tell bodge how to assemble pipeline.
 ;; Here we instruct it to compile and link shaders we defined earlier
@@ -20,7 +23,7 @@
   :vertex pass-through-vertex-shader
   :fragment pass-through-fragment-shader)
 
-(cl:in-package :hello-bodge-graphics)
+(cl:in-package :hello-bodge-graphics/pass-through)
 
 ;; Here we describe our little application we want to run our pass-through pipeline in
 (appkit:defapp pass-through-graphics ()
@@ -53,13 +56,13 @@
       (dispose pipeline))))
 
 ;; This function starts our example application
-(defun run/pass-through-graphics ()
+(defun run-example ()
   (appkit:start 'pass-through-graphics))
 
 ;; Lets export it
-(export 'run/pass-through-graphics)
+(export 'run-example)
 
-(cl:in-package :hello-bodge-graphics)
+(cl:in-package :hello-bodge-graphics/pass-through)
 
 ;; #'appkit:draw is called every loop iteration with context bound to graphics system,
 ;; so we can use graphics functions w/o for-graphics flow redirection

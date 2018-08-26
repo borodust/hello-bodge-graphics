@@ -16,9 +16,9 @@ Step-by-step introduction into `cl-bodge` graphics system.
 
 ```lisp
 ;; Load the example itself:
-(ql:quickload :hello-bodge-graphics)
+(ql:quickload :hello-bodge-graphics/pass-through)
 ;; And run it!
-(hello-bodge-graphics:run/pass-through-graphics)
+(hello-bodge-graphics/pass-through:run-example)
 ```
 
 # Documentation, guide and sources

@@ -1,0 +1,169 @@
+#+PROPERTY: header-args :mkdirp yes
+#+PROPERTY: header-args:lisp :results "output silent"
+#+PROPERTY: header-args:glsl :results "none"
+
+* Minimal example
+
+This example demostrates few basic concepts and a shortest way to render something onto screen
+with =cl-bodge=.
+
+** GLSL shaders
+
+First, we need to write down our shaders. To keep the example as barebone as possible we won't
+even pass any arguments to our vertex shader.[fn:1]
+
+#+BEGIN_SRC glsl :tangle src/pass-through/vert.glsl
+  #version 330
+
+  void main () {
+    // No transofmations, just put all vertices in the middle of the screen
+    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+    // Enlarge drawn points so we can easily recognize the result -
+    // not required but handy for debugging shaders
+    gl_PointSize = 100.0f;
+  }
+#+END_SRC
+
+Fragment shader is simple too, we would just pass hardcoded color out of it.
+
+#+BEGIN_SRC glsl :tangle src/pass-through/frag.glsl
+  #version 330
+
+  out vec4 fragColor;
+
+  void main () {
+    // hardcode output color for any fragments coming out from our pipeline
+    fragColor = vec4(0.8, 0.8, 0.8, 1.0);
+  }
+#+END_SRC
+
+
+** Setup
+
+Lets load all necessary code to continue working interactively in the REPL or within org-mode
+#+BEGIN_SRC lisp
+  (ql:quickload :hello-bodge-graphics)
+#+END_SRC
+
+Our package we are going to evaluate the code in:
+#+BEGIN_SRC lisp :tangle src/pass-through/app.lisp
+  (cl:defpackage :hello-bodge-graphics/pass-through
+    (:use :cl :cl-bodge.engine :cl-bodge.graphics :hello-bodge-graphics))
+#+END_SRC
+
+** Registering shaders
+
+Now we need to let =cl-bodge= know about our shaders. If you are evaluating this guide
+code in the repl, don't forget to setup =hello-bodge-graphics::*project-path*= appropriately as
+mentioned in [[hello-bodge-graphics.org]].
+
+#+BEGIN_SRC lisp :tangle src/pass-through/app.lisp
+  (cl:in-package :hello-bodge-graphics/pass-through)
+
+  (defshader (pass-through-vertex-shader
+              ;; In :sources option we provide path to our shader.
+              ;; Ensure shader sources you saved are put by this path relative to
+              ;; *project-path* value or just put correct full path here
+              (:sources (merge-project-path "src/pass-through/vert.glsl"))))
+
+
+  (defshader (pass-through-fragment-shader
+              ;; Same as with vertex shader, here we let bodge know where to find the source
+              (:sources (merge-project-path "src/pass-through/frag.glsl"))))
+#+END_SRC
+
+After evaluating these =defshader= definitions we just wrote, =cl-bodge= will register
+shaders and will load and process their sources accordingly.
+
+** Defining a pipeline
+
+We have our shaders in, so now we can proceed to the step two: defining shader pipeline.
+Shaders that does nothing but passing through values from input to outpu are called pass-through
+shaders. So our pipeline that consists only of those kind of shaders we will call the same -
+pass-through pipeline.
+
+#+BEGIN_SRC lisp :tangle src/pass-through/app.lisp
+  (cl:in-package :hello-bodge-graphics/pass-through)
+
+  ;; This definition will tell bodge how to assemble pipeline.
+  ;; Here we instruct it to compile and link shaders we defined earlier
+  ;; with defshader macro.
+  (defpipeline pass-through-pipeline
+    :vertex pass-through-vertex-shader
+    :fragment pass-through-fragment-shader)
+#+END_SRC
+
+** Creating a pipeline instance
+
+As told in step three, we need to make an instance of our shader pipeline. Now, to do just that
+we need to bring up a window, bind a valid rendering context and setup a rendering
+loop. Hopefully, we have a helper system called [[https://github.com/borodust/bodge-appkit][bodge-appkit]] which will do all that for us.
+
+#+BEGIN_SRC lisp :tangle src/pass-through/app.lisp
+  (cl:in-package :hello-bodge-graphics/pass-through)
+
+  ;; Here we describe our little application we want to run our pass-through pipeline in
+  (appkit:defapp pass-through-graphics ()
+    ;; this slot will hold our pipeline object
+    ((pipeline :initform nil))
+    ;; here go various application options
+    (:viewport-title "Hello Pass-Through Graphics")
+    (:viewport-width 800)
+    (:viewport-height 600))
+
+  ;; configuration-flow function is called every time application is initialized and reinitialized,
+  ;; to initialize its state
+  ;;
+  ;; Why it is called *-flow, what are flows and what is this weird `for-graphics` macro
+  ;; you can find in the guide that describes core cl-bodge concepts
+  (defmethod appkit:configuration-flow ((this pass-through-graphics))
+    (with-slots (pipeline) this
+      (for-graphics ()
+        ;; here we create our shader pipeline object we defined earlier
+        (setf pipeline (make-shader-pipeline 'pass-through-pipeline)))))
+
+
+  ;; sweeping-flow function is called every time applicatoin is reinitialized and closing
+  ;; to let you release all acquired resources
+  (defmethod appkit:sweeping-flow ((this pass-through-graphics))
+    (with-slots (pipeline) this
+      (for-graphics ()
+        ;; dispose is a bodge's universal function for freeing various engine resources
+        ;; here we release resources taken by pipeline
+        (dispose pipeline))))
+
+  ;; This function starts our example application
+  (defun run-example ()
+    (appkit:start 'pass-through-graphics))
+
+  ;; Lets export it
+  (export 'run-example)
+#+END_SRC
+
+** Rendering a pipeline
+
+Everything is setup and ready. Lets bring up the window by invoking
+=(hello-bodge-graphics/pass-through:run-example)=. Window is blank white, which is expected - we
+didn't write any rendering code yet. Lets fix that by putting call to =#'render= into the loop
+and use default framebuffer as our target.
+
+#+BEGIN_SRC lisp :tangle src/pass-through/app.lisp
+  (cl:in-package :hello-bodge-graphics/pass-through)
+
+  ;; #'appkit:draw is called every loop iteration with context bound to graphics system,
+  ;; so we can use graphics functions w/o for-graphics flow redirection
+  (defmethod appkit:draw ((this pass-through-graphics))
+    (with-slots (pipeline) this
+      ;; Our rendering code, finally! Here we have default framebuffer as our target
+      ;; and pipeline we created also telling to force primitive to :points,
+      ;; letting it to know that we want to render 1 vertex, but not passing
+      ;; any vertex data (letting underlying graphics driver to fill it with junk),
+      ;; because we don't even need it in our pass-through shaders
+      (render t pipeline :primitive :points :vertex-count 1)))
+#+END_SRC
+
+After evaluating above method definition grey rectangle should appear in the middle of the
+screen meaning your very first =cl-bodge/graphics= shader pipeline is fully setup and operating!
+
+[fn:1] I'm not quite sure this is a valid thing to do, so if that doesn't work for you, please,
+create an issue or just let me know via irc/email.
