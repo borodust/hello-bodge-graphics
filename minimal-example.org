@@ -115,15 +115,14 @@ loop. Hopefully, we have a helper system called [[https://github.com/borodust/bo
   ;; to initialize its state
   ;;
   ;; Why it is called *-flow, what are flows and what is this weird `for-graphics` macro
-  ;; you can find in the guide that describes core cl-bodge concepts
+  ;; you can learn from the guide that describes core cl-bodge concepts
   (defmethod appkit:configuration-flow ((this pass-through-graphics))
     (with-slots (pipeline) this
       (for-graphics ()
         ;; here we create our shader pipeline object we defined earlier
         (setf pipeline (make-shader-pipeline 'pass-through-pipeline)))))
 
-
-  ;; sweeping-flow function is called every time applicatoin is reinitialized and closing
+  ;; sweeping-flow function is called every time applicatoin is reinitialized and before closing
   ;; to let you release all acquired resources
   (defmethod appkit:sweeping-flow ((this pass-through-graphics))
     (with-slots (pipeline) this
@@ -164,6 +163,8 @@ and use default framebuffer as our target.
 
 After evaluating above method definition grey rectangle should appear in the middle of the
 screen meaning your very first =cl-bodge/graphics= shader pipeline is fully setup and operating!
+
+--------------------------------------------------------------------------------
 
 [fn:1] I'm not quite sure this is a valid thing to do, so if that doesn't work for you, please,
 create an issue or just let me know via irc/email.

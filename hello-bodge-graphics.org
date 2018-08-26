@@ -68,8 +68,8 @@ adventures.
   (defparameter *project-path* nil)
 
   (defun merge-project-path (relative-path)
-    "Construct a full path joining *project-path* with provided relative path
-or a system-relative-pathname if *project-path* is nil"
+    "Construct a full path joining *project-path* or a system-relative-pathname if *project-path*
+  is nil with provided relative path"
     (merge-pathnames relative-path (or *project-path*
                                        (asdf:system-relative-pathname :hello-bodge-graphics "./"))))
 #+END_SRC
@@ -84,7 +84,7 @@ If you are evaluating in REPL, please set =*project-path*= manually:
   (setf hello-bodge-graphics:*project-path* "/full/path/to/project/")
 #+END_SRC
 
-Now we are ready to explore the provided examples! Also check out [[file:configure-emacs-for-bodge.org][Configure Emacs for cl-bodge]]
+Now we are ready to explore the examples! Also check out [[file:configure-emacs-for-bodge.org][Configure Emacs for cl-bodge]]
 guide to configure live-reloading of shaders directly from =glsl-mode= buffer.
 
 ** Examples

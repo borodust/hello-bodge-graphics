@@ -38,15 +38,14 @@
 ;; to initialize its state
 ;;
 ;; Why it is called *-flow, what are flows and what is this weird `for-graphics` macro
-;; you can find in the guide that describes core cl-bodge concepts
+;; you can learn from the guide that describes core cl-bodge concepts
 (defmethod appkit:configuration-flow ((this pass-through-graphics))
   (with-slots (pipeline) this
     (for-graphics ()
       ;; here we create our shader pipeline object we defined earlier
       (setf pipeline (make-shader-pipeline 'pass-through-pipeline)))))
 
-
-;; sweeping-flow function is called every time applicatoin is reinitialized and closing
+;; sweeping-flow function is called every time applicatoin is reinitialized and is about to close
 ;; to let you release all acquired resources
 (defmethod appkit:sweeping-flow ((this pass-through-graphics))
   (with-slots (pipeline) this
