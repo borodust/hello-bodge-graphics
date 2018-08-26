@@ -4,8 +4,9 @@
 
 * Introduction into =cl-bodge= graphics system
 
-This step-by-step guide will introduce you to =cl-bodge= graphics API system =cl-bodge/graphics=
-starting with core concepts first and introducing more complex notions later.
+This step-by-step guide will introduce you to =cl-bodge= graphics API provided by
+=cl-bodge/graphics= system starting with core concepts first and introducing more complex
+notions later.
 
 ** =cl-bodge/graphics= overview
 
@@ -21,15 +22,16 @@ arguments. =cl-bodge= adapts this concept for graphics with function =render=:
 Signature looks familiar, isn't it? Indeed, it resembles =format= one except input arguments are
 keyword pairs. It works quite similar too!
 
-=output= argument is the target [[https://www.khronos.org/opengl/wiki/Framebuffer_Object][framebuffer]] for the rendering we want to perform into. If you
-pass =t= as =output= rendering will be performed into default framebuffer just like =format=
-would render string into standard output.
+=output= argument is often the target [[https://www.khronos.org/opengl/wiki/Framebuffer_Object][framebuffer]] for the rendering we want to perform into. If
+you pass =t= as =output= rendering will be performed into default framebuffer just like =format=
+would render string into standard output. But you also can provide texture as a target! All the
+machinery required to render directly into texture =cl-bodge= will handle for you.
 
 =pipeline= is an object representing rendering operation and =input= is a list of key-value
 pairs to control =pipeline= behavior.
 
-Now, =output= is a framebuffer, what is =pipeline= then. It can be various things, but
-=cl-bodge/graphics= system exposes only one: shader [[https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview#Pipeline][pipeline]].
+Now, =output= is a framebuffer or a texture, but what is =pipeline= then? It can be various
+things, but =cl-bodge/graphics= system exposes only one: shader [[https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview#Pipeline][pipeline]].
 
 Shader pipelines are defined with =defpipeline= macro and assembled from [[https://www.khronos.org/opengl/wiki/Shader][shaders]] using
 =make-shader-pipeline= function. Unlike various CL graphics libraries (e.g. [[https://github.com/cbaggers/cepl][CEPL]]) =cl-bodge=
@@ -39,10 +41,10 @@ session. Shaders are defined with =defshader= macro.
 
 Summing up, to display something via =cl-bodge\graphics=:
 1. Define shaders
-1. Define pipeline
+1. Define a pipeline
 1. Make a pipeline object
 1. Optionally, make a framebuffer
-1. Pass framebuffer, pipeline and pipeline arguments to =render= function
+1. Pass a framebuffer, a pipeline and pipeline arguments to =render= function
 
 ** Preparations
 Just right before digging deeper into =cl-bodge=, lets make little preparations by loading
@@ -74,15 +76,16 @@ or a system-relative-pathname if *project-path* is nil"
 
 If you are evaluating from org-mode, this block will setup correct project path
 #+BEGIN_SRC lisp :var %buffer-file-name%=(buffer-file-name)
-  (setf hello-bodge-graphics::*project-path* (uiop:pathname-directory-pathname %buffer-file-name%))
+  (setf hello-bodge-graphics:*project-path* (uiop:pathname-directory-pathname %buffer-file-name%))
 #+END_SRC
 
 If you are evaluating in REPL, please set =*project-path*= manually:
 #+BEGIN_SRC lisp :eval no
-  (setf hello-bodge-graphics::*project-path* "/full/path/to/project/")
+  (setf hello-bodge-graphics:*project-path* "/full/path/to/project/")
 #+END_SRC
 
-Now we are ready to explore the provided examples!
+Now we are ready to explore the provided examples! Also check out [[file:configure-emacs-for-bodge.org][Configure Emacs for cl-bodge]]
+guide to configure live-reloading of shaders directly from =glsl-mode= buffer.
 
 ** Examples
 

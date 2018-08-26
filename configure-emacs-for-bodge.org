@@ -1,0 +1,77 @@
+* Configure Emacs for cl-bodge
+
+Here are little tips on how to make your life using =cl-bodge= easier from Emacs with /SLY/ or /SLIME/.
+
+** Live-reload shaders
+
+For better experience, install =glsl-mode= to edit GLSL source code.
+
+Then add this snippet into your Emacs configuration (e.g. =init.el=)
+
+#+BEGIN_SRC emacs-lisp
+(require 'glsl-mode)
+
+(defun bodge/request-shader-recompilation ()
+  (interactive)
+  (when (boundp 'sly-mode)
+    (sly-eval-async '(slynk:pprint-eval "
+(when (find-package :ge.gx)
+ (uiop:symbol-call :ge.gx :reload-changed-and-mark-dirty))
+")
+      (lambda (result)
+        (cond
+         ((equal result "NIL") (message "Shaders up-to-date"))
+         (t (message "Shaders reloaded %s" result)))))))
+
+(defun bodge/glsl-compile ()
+  "C-c C-k in glsl-mode will request recompilation for out-of-date shaders in cl-bodge"
+  (local-set-key (kbd "C-c C-k") 'bodge/request-shader-recompilation))
+
+(add-hook 'glsl-mode-hook 'bodge/glsl-compile)
+#+END_SRC
+
+This version is for /SLY/, but it can be easily adapted for /SLIME/.
+
+Now after you finished editing GLSL source of a shader you registered with =cl-bodge= earlier
+and saved the buffer, you can request shader recompilation and autoload invoking /C-c C-k/ in
+=glsl-mode= buffer and all changed shaders would be reloaded in runtime.
+
+If you have an error in your shader source fear not! =cl-bodge= will drop into debugger pointing
+out to error it is ran into while compiling sources. Just fix those errors, save the buffers,
+and hit =RECOMPILE= restart in the debugger - =cl-bodge= will attempt to recompile your shader
+and if everything is ok this time it will load updated shaders and continue normal operation.
+
+
+** Literate programming with org-mode
+
+I'm using following configuration when developing in literate programming style with org-mode:
+
+#+BEGIN_SRC emacs-lisp
+  (custom-set-variables
+   ;; for SLIME use #'slime-eval
+   '(org-babel-lisp-eval-fn #'sly-eval)
+   ;; for explicitly enabling Markdown exporter, although I ended up using ox-pandoc
+   '(org-export-backends '(ascii html icalendar latex md odt)))
+
+  ;; Enable org-babel lisp support explicitly
+  (org-babel-do-load-languages 'org-babel-load-languages
+                               '((lisp . t)))
+
+  (custom-set-variables
+   ;; Don't ask for evaluation everytime C-c C-c is hit
+   '(org-confirm-babel-evaluate nil)
+   ;; Allows better control over source code but has quirks
+   '(org-src-tab-acts-natively t))
+
+  ;; When asking for GLSL evaluation, request cl-bodge to actually reload changed shaders
+  (defun org-babel-execute:glsl (body params)
+    "This function is called by `org-babel-execute-src-block'"
+    (bodge/request-shader-recompilation))
+
+  (defun boro/tangle-org-files ()
+    (when (equal major-mode 'org-mode)
+      (org-babel-tangle)))
+
+  ;; To always tangle code blocks upon saving an .org files
+  (add-hook 'after-save-hook 'boro/tangle-org-files)
+#+END_SRC
