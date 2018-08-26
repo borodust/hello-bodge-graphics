@@ -8,5 +8,6 @@
   :pathname "src"
   :serial t
   :components ((:file "packages")
+               (:file "utils")
                (:module pass-through
                 :components ((:file "app")))))

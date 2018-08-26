@@ -7,7 +7,6 @@
 This step-by-step guide will introduce you to =cl-bodge= graphics API system =cl-bodge/graphics=
 starting with core concepts first and introducing more complex notions later.
 
-
 ** =cl-bodge/graphics= overview
 
 In Common Lisp, function [[http://www.lispworks.com/documentation/lw50/CLHS/Body/f_format.htm%20][format]] allows you to print formatted strings into character streams:
@@ -76,7 +75,8 @@ Fragment shader is simple too, we would just pass hardcoded color out of it.
 #+END_SRC
 
 Just right before digging deeper into =cl-bodge=, lets make little preparations by loading
-required dependencies and defining a package we are going to evaluate our code in.
+required dependencies, defining a package we are going to evaluate our code in and add a little
+function to help us with finding path to shaders.
 
 #+BEGIN_SRC lisp
   (ql:quickload '(bodge-appkit cl-bodge/graphics))
@@ -87,43 +87,44 @@ required dependencies and defining a package we are going to evaluate our code i
     (:use :cl :cl-bodge.engine :cl-bodge.graphics))
 #+END_SRC
 
-Now we can and need to let =cl-bodge= know about our shaders. If you are evaluating this guide
-code in the repl, you might not yet have =:hello-bodge-graphics= ASDF system defined, so you
-would need to put full path to your shaders in =:sources= argument of =defshader= form and
-remove =:base-path= form from definitions or supply path to directory where shader sources are
-stored to it.
+#+BEGIN_SRC lisp :tangle src/utils.lisp
+  (cl:in-package :hello-bodge-graphics)
+
+  (defparameter *project-path* nil)
+
+  (defun merge-project-path (relative-path)
+    "Construct a full path joining *project-path* with provided relative path"
+    (merge-pathnames relative-path (or *project-path*
+                                       (asdf:system-relative-pathname :hello-bodge-graphics "./"))))
+#+END_SRC
+
+If you are evaluating from org-mode, this block will setup correct project path
+#+BEGIN_SRC lisp :var %buffer-file-name%=(buffer-file-name)
+  (setf hello-bodge-graphics::*project-path* (uiop:pathname-directory-pathname %buffer-file-name%))
+#+END_SRC
+
+If you are evaluating in REPL, please set =*project-path*= manually:
+#+BEGIN_SRC lisp :eval no
+  (setf hello-bodge-graphics::*project-path* "/full/path/to/project/")
+#+END_SRC
+
+Now we need to let =cl-bodge= know about our shaders. If you are evaluating this guide
+code in the repl, don't forget to setup =hello-bodge-graphics::*project-path*= appropriately as
+mentioned above.
 
 #+BEGIN_SRC lisp :tangle src/pass-through/app.lisp
   (cl:in-package :hello-bodge-graphics)
 
   (defshader (pass-through-vertex-shader
-              ;; In :sources option we provide path our shader name.
-              ;; It can be full path or relative path, but if you use relative path
-              ;; you also need to provide :base-path.
-              (:sources "vert.glsl")
-              ;; It is better to use relative paths from the start,
-              ;; so shader won't depend on you host machine.
-              ;; Here we use :system-relative base path, which is merged from
-              ;; component name of our ASDF system and provided relative path
-              ;;
-              ;; WARNING:
-              ;; If you are evaluating guide code in the repl,
-              ;; uncomment following form and put full path to your shader source directory there
-              ;; (:base-path "/full/path/to/directory/containing/shader/sources/")
-              ;; and instead wrap next line into a comment block
-              (:base-path :system-relative :hello-bodge-graphics "pass-through/")))
+              ;; In :sources option we provide path to our shader.
+              ;; Ensure shader sources you saved are put by this path relative to
+              ;; *project-path* value or just put correct full path here
+              (:sources (merge-project-path "src/pass-through/vert.glsl"))))
+
 
   (defshader (pass-through-fragment-shader
-              ;; Same as with vertex shader, here we let bodge know how our source file is named
-              (:sources "frag.glsl")
-              ;; And here we tell bodge where to look for this file
-              ;;
-              ;; WARNING:
-              ;; If you are evaluating guide code in the repl,
-              ;; uncomment following form and put full path to your shader source directory there
-              ;; (:base-path "/full/path/to/directory/containing/shader/sources/")
-              ;; and instead wrap next line into a comment block
-              (:base-path :system-relative :hello-bodge-graphics "pass-through/")))
+              ;; Same as with vertex shader, here we let bodge know where to find the source
+              (:sources (merge-project-path "src/pass-through/frag.glsl"))))
 #+END_SRC
 
 After evaluating these =defshader= definitions we just wrote, =cl-bodge= will register
@@ -226,6 +227,7 @@ To complete our application and make it easily loadable, we need to arrange an A
     :pathname "src"
     :serial t
     :components ((:file "packages")
+                 (:file "utils")
                  (:module pass-through
                   :components ((:file "app")))))
 #+END_SRC

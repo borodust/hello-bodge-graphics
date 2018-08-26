@@ -1,33 +1,15 @@
 (cl:in-package :hello-bodge-graphics)
 
 (defshader (pass-through-vertex-shader
-            ;; In :sources option we provide path our shader name.
-            ;; It can be full path or relative path, but if you use relative path
-            ;; you also need to provide :base-path.
-            (:sources "vert.glsl")
-            ;; It is better to use relative paths from the start,
-            ;; so shader won't depend on you host machine.
-            ;; Here we use :system-relative base path, which is merged from
-            ;; component name of our ASDF system and provided relative path
-            ;;
-            ;; WARNING:
-            ;; If you are evaluating guide code in the repl,
-            ;; uncomment following form and put full path to your shader source directory there
-            ;; (:base-path "/full/path/to/directory/containing/shader/sources/")
-            ;; and instead wrap next line into a comment block
-            (:base-path :system-relative :hello-bodge-graphics "pass-through/")))
+            ;; In :sources option we provide path to our shader.
+            ;; Ensure shader sources you saved are put by this path relative to
+            ;; *project-path* value or just put correct full path here
+            (:sources (merge-project-path "src/pass-through/vert.glsl"))))
+
 
 (defshader (pass-through-fragment-shader
-            ;; Same as with vertex shader, here we let bodge know how our source file is named
-            (:sources "frag.glsl")
-            ;; And here we tell bodge where to look for this file
-            ;;
-            ;; WARNING:
-            ;; If you are evaluating guide code in the repl,
-            ;; uncomment following form and put full path to your shader source directory there
-            ;; (:base-path "/full/path/to/directory/containing/shader/sources/")
-            ;; and instead wrap next line into a comment block
-            (:base-path :system-relative :hello-bodge-graphics "pass-through/")))
+            ;; Same as with vertex shader, here we let bodge know where to find the source
+            (:sources (merge-project-path "src/pass-through/frag.glsl"))))
 
 (cl:in-package :hello-bodge-graphics)
 
