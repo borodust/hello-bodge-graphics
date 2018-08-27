@@ -11,17 +11,24 @@ Then add this snippet into your Emacs configuration (e.g. =init.el=)
 #+BEGIN_SRC emacs-lisp
 (require 'glsl-mode)
 
-(defun bodge/request-shader-recompilation ()
-  (interactive)
-  (when (boundp 'sly-mode)
-    (sly-eval-async '(slynk:pprint-eval "
+(defun bodge/print-recompilation-result (result)
+  (let ((result (read (downcase result))))
+    (cond
+     ((eq 'nil result) (message "Shaders up-to-date"))
+     (t (message "Shaders reloaded %s" result)))))
+
+(setq bodge/shader-recompilation-source "
 (when (find-package :ge.gx)
  (uiop:symbol-call :ge.gx :reload-changed-and-mark-dirty))
 ")
-      (lambda (result)
-        (cond
-         ((equal result "NIL") (message "Shaders up-to-date"))
-         (t (message "Shaders reloaded %s" result)))))))
+
+(defun bodge/request-shader-recompilation ()
+  (interactive)
+  (cond
+   ((boundp 'sly-mode) (sly-eval-async `(slynk:pprint-eval ,bodge/shader-recompilation-source)
+                                       #'bodge/print-recompilation-result))
+   ((boundp 'slime-mode) (slime-eval-async `(swank:pprint-eval ,bodge/shader-recompilation-source)
+                                           #'bodge/print-recompilation-result))))
 
 (defun bodge/glsl-compile ()
   "C-c C-k in glsl-mode will request recompilation for out-of-date shaders in cl-bodge"
@@ -29,8 +36,6 @@ Then add this snippet into your Emacs configuration (e.g. =init.el=)
 
 (add-hook 'glsl-mode-hook 'bodge/glsl-compile)
 #+END_SRC
-
-This version is for /SLY/, but it can be easily adapted for /SLIME/.
 
 Now after you finished editing GLSL source of a shader you registered with =cl-bodge= earlier
 and saved the buffer, you can request shader recompilation and autoload invoking /C-c C-k/ in

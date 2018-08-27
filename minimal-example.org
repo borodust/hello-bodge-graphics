@@ -122,7 +122,7 @@ loop. Hopefully, we have a helper system called [[https://github.com/borodust/bo
         ;; here we create our shader pipeline object we defined earlier
         (setf pipeline (make-shader-pipeline 'pass-through-pipeline)))))
 
-  ;; sweeping-flow function is called every time applicatoin is reinitialized and before closing
+  ;; sweeping-flow function is called every time applicatoin is reinitialized and is about to close
   ;; to let you release all acquired resources
   (defmethod appkit:sweeping-flow ((this pass-through-graphics))
     (with-slots (pipeline) this
