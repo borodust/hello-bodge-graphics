@@ -46,6 +46,15 @@ Summing up, to display something via =cl-bodge\graphics=:
 1. Optionally, make a framebuffer
 1. Pass a framebuffer, a pipeline and pipeline arguments to =render= function
 
+** Guide How-To
+
+This guide is written in literate programming style - documentation is your code. You can
+evaluate provided examples block-by-block in your Common Lisp REPL of choice, or use =org-mode=
+to do the same in a more convenient fasion or execute all code blocks in a buffer at once, or,
+ultimately, you can just load any system described below in [[#asdf-definitions][ASDF definitions]] section and call
+appropriate =run-example= functions.
+
+
 ** Preparations
 Just right before digging deeper into =cl-bodge=, lets make little preparations by loading
 required dependencies and defining a few of helper functions that will help us in our future
@@ -92,6 +101,9 @@ guide to configure live-reloading of shaders directly from =glsl-mode= buffer.
 - [[file:minimal-example.org][Minimal Example]] :: Only absolutely essential code to bring something up onto screen
 
 ** ASDF definitions
+:PROPERTIES:
+:CUSTOM_ID: asdf-definitions
+:END:
 
 Lets arrange ASDF definitions for all of our examples we provided above to load them anytime
 later instead of manually evaluating code blocks one-by-one.
