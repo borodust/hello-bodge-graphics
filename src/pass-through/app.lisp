@@ -1,5 +1,5 @@
 (cl:defpackage :hello-bodge-graphics/pass-through
-  (:use :cl :cl-bodge.engine :cl-bodge.graphics :hello-bodge-graphics))
+  (:use :cl :cl-bodge.engine :cl-bodge.graphics :cl-bodge.appkit :hello-bodge-graphics))
 
 (cl:in-package :hello-bodge-graphics/pass-through)
 
@@ -26,7 +26,7 @@
 (cl:in-package :hello-bodge-graphics/pass-through)
 
 ;; Here we describe our little application we want to run our pass-through pipeline in
-(appkit:defapp pass-through-graphics ()
+(defapp pass-through-graphics ()
   ;; this slot will hold our pipeline object
   ((pipeline :initform nil))
   ;; here go various application options
@@ -39,7 +39,7 @@
 ;;
 ;; Why it is called *-flow, what are flows and what is this weird `for-graphics` macro
 ;; you can learn from the guide that describes core cl-bodge concepts
-(defmethod appkit:configuration-flow ((this pass-through-graphics))
+(defmethod configuration-flow ((this pass-through-graphics))
   (with-slots (pipeline) this
     (for-graphics ()
       ;; here we create our shader pipeline object we defined earlier
@@ -47,7 +47,7 @@
 
 ;; sweeping-flow function is called every time applicatoin is reinitialized and is about to close
 ;; to let you release all acquired resources
-(defmethod appkit:sweeping-flow ((this pass-through-graphics))
+(defmethod sweeping-flow ((this pass-through-graphics))
   (with-slots (pipeline) this
     (for-graphics ()
       ;; dispose is a bodge's universal function for freeing various engine resources
@@ -56,7 +56,7 @@
 
 ;; This function starts our example application
 (defun run-example ()
-  (appkit:start 'pass-through-graphics))
+  (start 'pass-through-graphics))
 
 ;; Lets export it
 (export 'run-example)
@@ -65,7 +65,7 @@
 
 ;; #'appkit:draw is called every loop iteration with context bound to graphics system,
 ;; so we can use graphics functions w/o for-graphics flow redirection
-(defmethod appkit:draw ((this pass-through-graphics))
+(defmethod draw ((this pass-through-graphics))
   (with-slots (pipeline) this
     ;; Our rendering code, finally! Here we have default framebuffer as our target
     ;; and pipeline we created also telling to force primitive to :points,

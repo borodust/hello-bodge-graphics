@@ -4,7 +4,7 @@
   :author "Pavel Korolev"
   :license "MIT"
   :mailto "dev@borodust.org"
-  :depends-on (cl-bodge/graphics bodge-appkit)
+  :depends-on (cl-bodge/graphics cl-bodge/appkit)
   :pathname "src"
   :serial t
   :components ((:file "hello-bodge-graphics")))
