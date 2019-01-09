@@ -61,7 +61,7 @@ required dependencies and defining a few of helper functions that will help us i
 adventures.
 
 #+BEGIN_SRC lisp
-  (ql:quickload '(bodge-appkit cl-bodge/graphics))
+  (ql:quickload '(cl-bodge/graphics cl-bodge/appkit))
 #+END_SRC
 
 #+BEGIN_SRC lisp :tangle src/hello-bodge-graphics.lisp
