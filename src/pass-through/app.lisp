@@ -63,7 +63,7 @@
 
 (cl:in-package :hello-bodge-graphics/pass-through)
 
-;; #'appkit:draw is called every loop iteration with context bound to graphics system,
+;; #'cl-bodge.appkit:draw is called every loop iteration with context bound to graphics system,
 ;; so we can use graphics functions w/o for-graphics flow redirection
 (defmethod draw ((this pass-through-graphics))
   (with-slots (pipeline) this
