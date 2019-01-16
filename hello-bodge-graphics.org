@@ -99,6 +99,7 @@ guide to configure live-reloading of shaders directly from =glsl-mode= buffer.
 ** Examples
 
 - [[file:minimal-example.org][Minimal Example]] :: Only absolutely essential code to bring something up onto screen
+- [[file:colored-triangle.org][Colored Triangle]] :: Classic example demonstrating rendering of a simple object
 
 ** ASDF definitions
 :PROPERTIES:
@@ -128,6 +129,17 @@ later instead of manually evaluating code blocks one-by-one.
     :mailto "dev@borodust.org"
     :depends-on (hello-bodge-graphics)
     :pathname "src/pass-through/"
+    :serial t
+    :components ((:file "app")))
+
+  (asdf:defsystem :hello-bodge-graphics/colored-triangle
+    :description "Classic colored example for cl-bodge/graphics"
+    :version "1.0.0"
+    :author "Pavel Korolev"
+    :license "MIT"
+    :mailto "dev@borodust.org"
+    :depends-on (hello-bodge-graphics)
+    :pathname "src/colored-triangle/"
     :serial t
     :components ((:file "app")))
 #+END_SRC

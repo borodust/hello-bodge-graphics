@@ -19,3 +19,14 @@
   :pathname "src/pass-through/"
   :serial t
   :components ((:file "app")))
+
+(asdf:defsystem :hello-bodge-graphics/colored-triangle
+  :description "Classic colored example for cl-bodge/graphics"
+  :version "1.0.0"
+  :author "Pavel Korolev"
+  :license "MIT"
+  :mailto "dev@borodust.org"
+  :depends-on (hello-bodge-graphics)
+  :pathname "src/colored-triangle/"
+  :serial t
+  :components ((:file "app")))
